@@ -6,13 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "npx drizzle-kit push",
+    "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",
+    "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.2",
     "lucide-react": "^0.515.0",
     "next": "15.3.3",
     "react": "^19.0.0",
@@ -23,7 +28,9 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "24.0.1",
     "@types/react": "19.1.8",
+    "drizzle-kit": "^0.31.1",
     "tailwindcss": "^4",
+    "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
     "typescript": "5.8.3"
   }
