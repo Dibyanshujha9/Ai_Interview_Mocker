@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { db } from '@/utils/db'; // Assuming your database connection
 import { MockInterview } from '@/utils/schema'; // Assuming your database schema
+import { useRouter } from 'next/router';
 
 const AddNewInterview = () => {
   // State management
@@ -27,7 +28,9 @@ const AddNewInterview = () => {
   const [jobExperience, setJobExperience] = useState('');
   const [loading, setLoading] = useState(false);
   const [jsonResponse, setJsonResponse] = useState([]);
-  
+  const router = useRouter();
+
+
   // Get current user from Clerk
   const { user } = useUser();
 
@@ -146,7 +149,13 @@ if(resp)
    * Handles dialog close and resets form if needed
    */
   const handleDialogClose = () => {
-    setOpenDialog(false);
+    if(resp){
+       setOpenDialog(false);
+       router.push('/dashboard/interview'+resp[0]?.mockId);
+    }
+   
+
+
     if (!loading) {
       resetForm();
     }
