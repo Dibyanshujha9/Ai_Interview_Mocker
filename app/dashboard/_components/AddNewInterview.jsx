@@ -18,7 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { db } from '@/utils/db'; // Assuming your database connection
 import { MockInterview } from '@/utils/schema'; // Assuming your database schema
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation'; // ✅ CORRECT for App Router
 
 const AddNewInterview = () => {
   // State management
@@ -111,10 +111,11 @@ const AddNewInterview = () => {
         // Success notification (you can replace with toast notification)
         alert("✅ Interview questions generated successfully!");
         
-if(resp)
-{
+if (dbResponse && dbResponse.length > 0) {
   setOpenDialog(false);
+  router.push('/dashboard/interview/' + dbResponse[0].mockId);
 }
+
 
       } else {
         throw new Error("Invalid response format from AI");
