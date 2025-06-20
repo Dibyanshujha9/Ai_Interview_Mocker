@@ -1,52 +1,63 @@
 "use client"; // ✅ Marks this as a Client Component
 
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic'; // ✅ Import dynamic for SSR-safe components
+import { useParams } from 'next/navigation'; // ✅ Hook for dynamic route params
 import { db } from '@/utils/db';
 import { MockInterview } from '@/utils/schema';
 import { eq } from 'drizzle-orm';
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation'; // ✅ Import useParams to access route params in Client Components
+
 import QuestionsSection from './_components/QuestionsSection';
-import RecordAnswerSection from './_components/RecordAnswerSection';
+
+// ✅ Dynamically import RecordAnswerSection to disable SSR
+const RecordAnswerSection = dynamic(
+  () => import("./_components/RecordAnswerSection"),
+  { ssr: false }
+);
 
 const StartInterview = () => {
-  const params = useParams(); // ✅ Get route params using useParams
-  const interviewId = params.interviewId; // ✅ Extract interviewId from params
+  const params = useParams(); // ✅ This returns an object of dynamic params
+  const interviewId = params?.interviewId;
 
-  const [interviewData, setInterviewData] = useState();
-  const [mockInterviewQuestion, setMockInterviewQuestion] = useState();
-const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-
+  const [interviewData, setInterviewData] = useState(null);
+  const [mockInterviewQuestion, setMockInterviewQuestion] = useState([]);
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
   useEffect(() => {
-    GetInterviewDetails();
-  }, []);
+    if (interviewId) {
+      GetInterviewDetails();
+    }
+  }, [interviewId]);
 
   const GetInterviewDetails = async () => {
-    const result = await db
-      .select()
-      .from(MockInterview)
-      .where(eq(MockInterview.mockId, interviewId)); // ✅ Use extracted interviewId
+    try {
+      const result = await db
+        .select()
+        .from(MockInterview)
+        .where(eq(MockInterview.mockId, interviewId));
 
-    const jsonMockResp = JSON.parse(result[0].jsonMockResp);
-    console.log(jsonMockResp);
-
-    setMockInterviewQuestion(jsonMockResp);
-    setInterviewData(result[0]);
+      if (result?.[0]) {
+        const jsonMockResp = JSON.parse(result[0].jsonMockResp);
+        setMockInterviewQuestion(jsonMockResp);
+        setInterviewData(result[0]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching interview details:", error);
+    }
   };
 
   return (
-    <div>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-10'>
-{/* Questions  */}
-<QuestionsSection
-mockInterviewQuestion={mockInterviewQuestion}
-activeQuestionIndex={activeQuestionIndex}
-/>
-{/* Record video or audio recording  */}
-<RecordAnswerSection 
+    <div className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* Questions Section */}
+        <QuestionsSection
+          mockInterviewQuestion={mockInterviewQuestion}
+          activeQuestionIndex={activeQuestionIndex}
+        />
 
-/>
-        </div>
+        {/* Recording Section */}
+        <RecordAnswerSection />
+      </div>
     </div>
   );
 };

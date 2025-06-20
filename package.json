@@ -26,6 +26,7 @@
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-speech-to-text": "^0.8.0",
     "react-webcam": "^7.2.0",
     "speech-into-text": "^4.0.2",
     "tailwind-merge": "^3.3.1",

@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState, use } from "react";
+
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { db } from "@/utils/db";
 import { MockInterview } from "@/utils/schema";
@@ -7,13 +8,15 @@ import { eq } from "drizzle-orm";
 import { Lightbulb, WebcamIcon } from "lucide-react";
 import Link from "next/link";
 import Webcam from "react-webcam";
+import { useParams } from "next/navigation";
 
-const InterviewPage = ({ params }) => {
-  // ✅ Fixed: Unwrap params Promise using React.use()
-  const { interviewId } = use(params);
+const InterviewPage = () => {
+  const params = useParams();
+  const interviewId = params?.interviewId;
 
   const [interviewData, setInterviewData] = useState(null);
   const [webCamEnabled, setWebCamEnabled] = useState(false);
+  const [permissionGranted, setPermissionGranted] = useState(false); // ✅ Controls access
 
   useEffect(() => {
     if (interviewId) {
@@ -27,7 +30,6 @@ const InterviewPage = ({ params }) => {
         .select()
         .from(MockInterview)
         .where(eq(MockInterview.mockId, interviewId));
-
       setInterviewData(result[0]);
     } catch (error) {
       console.error("Error fetching interview details:", error);
@@ -35,8 +37,16 @@ const InterviewPage = ({ params }) => {
     }
   };
 
-  const handleWebcamToggle = () => {
-    setWebCamEnabled(true);
+  const handlePermissionRequest = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setPermissionGranted(true);
+      setWebCamEnabled(true);
+      alert("✅ Camera and Microphone access granted!");
+    } catch (err) {
+      alert("❌ Permission denied or error occurred.");
+      console.error("Permission error:", err);
+    }
   };
 
   return (
@@ -44,20 +54,20 @@ const InterviewPage = ({ params }) => {
       <h2 className="font-bold text-2xl">Let's get started</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Left Section: Interview Info & Instructions */}
+        {/* Left Section */}
         <div className="flex flex-col my-5 gap-5">
           {/* Interview Details */}
           <div className="flex flex-col p-5 rounded-lg border gap-5">
             <h2 className="text-lg">
-              <strong>Job Role/Job Position: </strong>
+              <strong>Job Role/Position: </strong>
               {interviewData?.jobPosition}
             </h2>
             <h2 className="text-lg">
-              <strong>Job Description/Tech Stack: </strong>
+              <strong>Tech Stack: </strong>
               {interviewData?.jobDesc}
             </h2>
             <h2 className="text-lg">
-              <strong>Years of Experience: </strong>
+              <strong>Experience: </strong>
               {interviewData?.jobExperience}
             </h2>
           </div>
@@ -81,33 +91,43 @@ const InterviewPage = ({ params }) => {
           </div>
         </div>
 
-        {/* Right Section: Webcam */}
-        <div>
-          {webCamEnabled ? (
-            <Webcam
-              mirrored={true}
-              style={{ height: 300, width: "100%" }}
-              onUserMedia={() => setWebCamEnabled(true)}
-              onUserMediaError={() => {
-                alert("Webcam access error");
-                setWebCamEnabled(false);
-              }}
-            />
-          ) : (
-            <>
-              <WebcamIcon className="h-72 my-7 border rounded-lg w-full p-20 bg-secondary" />
-              <Button className="w-full" variant="ghost" onClick={handleWebcamToggle}>
-                Enable Web Cam and Microphone
-              </Button>
-            </>
-          )}
-        </div>
+       <div className="flex flex-col items-center justify-center w-full">
+  {/* Webcam Preview */}
+  {permissionGranted ? (
+    <Webcam
+      mirrored
+      style={{ height: 300, width: "100%" }}
+      onUserMedia={() => setWebCamEnabled(true)}
+      onUserMediaError={() => {
+        alert("Webcam access error");
+        setWebCamEnabled(false);
+        setPermissionGranted(false);
+      }}
+    />
+  ) : (
+    <WebcamIcon className="h-72 my-7 border rounded-lg w-full p-20 bg-secondary" />
+  )}
+
+  {/* Always-visible Button */}
+  <button
+    onClick={handlePermissionRequest}
+    className="mt-5 text-sm text-white bg-black border border-gray-500 px-4 py-2 rounded-md hover:bg-gray-800 transition-all duration-200"
+  >
+    Grant Camera & Mic Access
+  </button>
+</div>
+
       </div>
 
       {/* Start Interview Button */}
       <div className="flex justify-end items-end mt-6">
-        <Link href={`/dashboard/interview/${interviewId}/start`}>
-          <Button>Start Interview</Button>
+        <Link
+          href={`/dashboard/interview/${interviewId}/start`}
+          className={permissionGranted ? "" : "pointer-events-none"}
+        >
+          <Button disabled={!permissionGranted} variant={permissionGranted ? "default" : "secondary"}>
+            Start Interview
+          </Button>
         </Link>
       </div>
     </div>
@@ -115,5 +135,3 @@ const InterviewPage = ({ params }) => {
 };
 
 export default InterviewPage;
-
-

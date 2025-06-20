@@ -26,9 +26,12 @@ const QuestionsSection = ({ mockInterviewQuestion, activeQuestionIndex }) => {
         {mockInterviewQuestion.map((question, index) => (
           <h2
             key={index} // ✅ Added key here to fix React warning
-            className={`p-2 bg-secondary rounded-full text-xs md:text-sm text-center cursor-pointer ${
-              activeQuestionIndex === index ? 'bg-blue-700 text-white' : ''
-            }`}
+            className={`p-2 rounded-full text-xs md:text-sm text-center cursor-pointer transition-colors duration-200 ${
+  activeQuestionIndex === index
+    ? 'bg-blue-500 text-white'
+    : 'bg-secondary text-black'
+}`}
+
           >
             Question #{index + 1}
           </h2>
