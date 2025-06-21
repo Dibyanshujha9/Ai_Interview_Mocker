@@ -1,5 +1,7 @@
 "use client"; // ✅ Marks this as a Client Component
 
+// Added comments and code cleaning
+
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic'; // ✅ Import dynamic for SSR-safe components
 import { useParams } from 'next/navigation'; // ✅ Hook for dynamic route params
