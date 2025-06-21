@@ -8,6 +8,8 @@ import { MockInterview } from '@/utils/schema';
 import { eq } from 'drizzle-orm';
 
 import QuestionsSection from './_components/QuestionsSection';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 // ✅ Dynamically import RecordAnswerSection to disable SSR
 const RecordAnswerSection = dynamic(
@@ -56,7 +58,28 @@ const StartInterview = () => {
         />
 
         {/* Recording Section */}
-        <RecordAnswerSection />
+        <RecordAnswerSection
+          mockInterviewQuestion={mockInterviewQuestion}
+          activeQuestionIndex={activeQuestionIndex}
+          interviewData={interviewData}
+        />
+      </div>
+       <div className="flex justify-end gap-6">
+        {activeQuestionIndex > 0 && (
+          <Button onClick={() => setActiveQuestionIndex(activeQuestionIndex - 1)}>
+            Previous Question
+          </Button>
+        )}
+        {activeQuestionIndex != mockInterviewQuestion?.length - 1 && (
+          <Button onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}>
+            Next Question
+          </Button>
+        )}
+        {activeQuestionIndex == mockInterviewQuestion?.length - 1 && (
+          <Link href={'/dashboard/interview/' +  '/feedback'}>
+            <Button>End Interview</Button>
+          </Link>
+        )}
       </div>
     </div>
   );

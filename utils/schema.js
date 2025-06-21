@@ -10,3 +10,19 @@ export const MockInterview = pgTable('mockInterview', {
   createdAt: varchar('createdAt', { length: 255 }), // or use timestamp type
   mockId: varchar('mockId', { length: 255 }).notNull(),
 });
+
+
+export const UserAnswer=pgTable('userAnswer',{
+    id: serial('id').primaryKey(),
+mockIdRef:varchar('mockId').notNull(),
+question:varchar('question').notNull(),
+correctAns:text('correctAns').notNull(),
+UserAns:text('UserAns').notNull(),
+feedback:text('feedback').notNull(),
+rating:varchar('rating'),
+userEmail:varchar('userEmail'),
+  createdAt: varchar('createdAt', { length: 255 }), // or use timestamp type
+})
+
+
+
