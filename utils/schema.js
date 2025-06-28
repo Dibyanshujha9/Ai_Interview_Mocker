@@ -17,7 +17,7 @@ export const UserAnswer=pgTable('userAnswer',{
 mockIdRef:varchar('mockId').notNull(),
 question:varchar('question').notNull(),
 correctAns:text('correctAns').notNull(),
-UserAns:text('UserAns').notNull(),
+userAns:text('UserAns').notNull(),
 feedback:text('feedback').notNull(),
 rating:varchar('rating'),
 userEmail:varchar('userEmail'),

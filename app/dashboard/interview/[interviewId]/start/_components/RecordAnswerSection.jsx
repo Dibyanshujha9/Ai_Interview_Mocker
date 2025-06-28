@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState, useRef } from "react";
 import { Mic, StopCircle, Loader2, Camera, CameraOff } from "lucide-react";
@@ -9,10 +10,10 @@ import { UserAnswer } from "@/utils/schema";
 import { useUser } from "@clerk/nextjs";
 import moment from "moment";
 
-const RecordAnswerSection = ({ 
-  mockInterviewQuestion, 
-  activeQuestionIndex, 
-  interviewData, 
+const RecordAnswerSection = ({
+  mockInterviewQuestion,
+  activeQuestionIndex,
+  interviewData,
   onAnswerSave,
 }) => {
   const [userAnswer, setUserAnswer] = useState("");
@@ -24,25 +25,23 @@ const RecordAnswerSection = ({
   const webcamRef = useRef(null);
 
   useEffect(() => {
-    // Speech recognition setup (previous code remains the same)
-    if (typeof window !== "undefined" && 'webkitSpeechRecognition' in window) {
+    if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
       recognitionRef.current = new window.webkitSpeechRecognition();
       const recognition = recognitionRef.current;
 
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US';
+      recognition.lang = "en-US";
 
       recognition.onresult = (event) => {
-        let finalTranscript = '';
+        let finalTranscript = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript + ' ';
+            finalTranscript += event.results[i][0].transcript + " ";
           }
         }
-
         if (finalTranscript.trim()) {
-          setUserAnswer(prev => (prev + ' ' + finalTranscript).trim());
+          setUserAnswer((prev) => (prev + " " + finalTranscript).trim());
         }
       };
 
@@ -67,7 +66,7 @@ const RecordAnswerSection = ({
       toast.success("Webcam enabled successfully");
     } catch (error) {
       toast.error("Failed to enable webcam", {
-        description: "Please check your camera permissions"
+        description: "Please check your camera permissions",
       });
       console.error("Webcam error:", error);
     }
@@ -75,12 +74,11 @@ const RecordAnswerSection = ({
 
   const DisableWebcam = () => {
     const tracks = webcamRef.current?.srcObject?.getTracks();
-    tracks?.forEach(track => track.stop());
+    tracks?.forEach((track) => track.stop());
     setWebcamEnabled(false);
   };
 
   const StartStopRecording = () => {
-    // (previous recording logic remains the same)
     if (!recognitionRef.current) {
       toast.error("Speech-to-text not supported");
       return;
@@ -96,54 +94,7 @@ const RecordAnswerSection = ({
     }
   };
 
-  // const UpdateUserAnswer = async () => {
-  //   // (previous answer saving logic remains the same)
-  //   if (!userAnswer.trim()) {
-  //     toast.error("Please provide an answer");
-  //     return;
-  //   }
-
-  //   setLoading(true);
-
-  //   try {
-  //     const feedbackPrompt = `Question: ${mockInterviewQuestion[activeQuestionIndex]?.question}, User Answer: ${userAnswer}. Please give a rating out of 10 and feedback on improvement in JSON format { "rating": <number>, "feedback": <text> }`;
-      
-  //     const result = await chatSession.sendMessage(feedbackPrompt);
-  //     const mockJsonResp = result.response.text().replace(/```json|```/g, '').trim();
-  //     const JsonfeedbackResp = JSON.parse(mockJsonResp);
-
-  //     const answerRecord = {
-  //       mockIdRef: interviewData?.mockId,
-  //       question: mockInterviewQuestion[activeQuestionIndex]?.question,
-  //       correctAns: mockInterviewQuestion[activeQuestionIndex]?.answer,
-  //       userAns: userAnswer,
-  //       feedback: JsonfeedbackResp?.feedback,
-  //       rating: JsonfeedbackResp?.rating,
-  //       userEmail: user?.primaryEmailAddress?.emailAddress,
-  //       createdAt: moment().format("DD-MM-YYYY"),
-  //     };
-
-  //     await db.insert(UserAnswer).values(answerRecord);
-
-  //     onAnswerSave?.(answerRecord);
-
-  //     toast.success("Answer recorded successfully");
-      
-  //     setUserAnswer("");
-  //     if (recognitionRef.current) {
-  //       recognitionRef.current.stop();
-  //     }
-  //     setIsRecording(false);
-  //   } catch (error) {
-  //     toast.error("Failed to save answer", {
-  //       description: error.message
-  //     });
-  //     console.error("Answer save error:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+ 
 const UpdateUserAnswer = async () => {
   if (!userAnswer.trim()) {
     toast.error("Please provide an answer");
@@ -153,37 +104,54 @@ const UpdateUserAnswer = async () => {
   setLoading(true);
 
   try {
-    const feedbackPrompt = `Question: ${mockInterviewQuestion[activeQuestionIndex]?.question}, User Answer: ${userAnswer}. Please give a rating out of 10 and feedback on improvement in JSON format { "rating": <number>, "feedback": <text> }`;
-    
-    const result = await chatSession.sendMessage(feedbackPrompt);
-    const mockJsonResp = result.response.text().replace(/```json|```/g, '').trim();
-    const JsonfeedbackResp = JSON.parse(mockJsonResp);
+    const feedbackPrompt = `Question: ${mockInterviewQuestion[activeQuestionIndex]?.question}, User Answer: ${userAnswer}. Please give a rating out of 10 and feedback on improvement in JSON format like this: { "rating": 8, "feedback": "Good answer but could use more examples." }`;
 
+    const result = await chatSession.sendMessage(feedbackPrompt);
+    const rawText = await result.response.text();
+
+    // ✅ Extract valid JSON only
+    const jsonMatch = rawText.match(/\{\s*"rating"\s*:\s*\d+\s*,[\s\S]*?\}/);
+
+    if (!jsonMatch) {
+      toast.error("Could not find valid JSON in AI response.");
+      console.error("Full AI response:", rawText);
+      return;
+    }
+
+    let JsonfeedbackResp;
+    try {
+      JsonfeedbackResp = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      toast.error("JSON parsing failed.");
+      console.error("JSON parse error:", parseErr, "Matched string:", jsonMatch[0]);
+      return;
+    }
+
+    // ✅ All keys must match Drizzle schema exactly
     const answerRecord = {
       mockIdRef: interviewData?.mockId,
       question: mockInterviewQuestion[activeQuestionIndex]?.question,
       correctAns: mockInterviewQuestion[activeQuestionIndex]?.answer,
-      UserAns: userAnswer, // ✅ Casing fixed
-      feedback: JsonfeedbackResp?.feedback,
-      rating: JsonfeedbackResp?.rating,
+      userAns: userAnswer,
+      feedback: JsonfeedbackResp?.feedback || "No feedback provided",
+      rating: JsonfeedbackResp?.rating || 0,
       userEmail: user?.primaryEmailAddress?.emailAddress,
       createdAt: moment().format("DD-MM-YYYY"),
     };
 
+    // ✅ Insert into DB
     await db.insert(UserAnswer).values(answerRecord);
-
     onAnswerSave?.(answerRecord);
 
     toast.success("Answer recorded successfully");
-    
+
+    // ✅ Reset state
     setUserAnswer("");
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
+    if (recognitionRef.current) recognitionRef.current.stop();
     setIsRecording(false);
   } catch (error) {
     toast.error("Failed to save answer", {
-      description: error.message
+      description: error.message,
     });
     console.error("Answer save error:", error);
   } finally {
@@ -200,12 +168,13 @@ const UpdateUserAnswer = async () => {
           <p className="text-white text-lg">Saving your answer...</p>
         </div>
       )}
+
       <div className="flex flex-col my-20 justify-center items-center bg-black rounded-lg p-5">
         {webcamEnabled ? (
-          <video 
-            ref={webcamRef} 
-            autoPlay 
-            playsInline 
+          <video
+            ref={webcamRef}
+            autoPlay
+            playsInline
             className="w-[200px] h-[200px] object-cover rounded-lg"
           />
         ) : (
@@ -213,9 +182,9 @@ const UpdateUserAnswer = async () => {
             <p className="text-gray-500">Webcam Disabled</p>
           </div>
         )}
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           className="mt-4"
           onClick={webcamEnabled ? DisableWebcam : EnableWebcam}
         >
@@ -254,14 +223,16 @@ const UpdateUserAnswer = async () => {
         value={userAnswer}
         onChange={(e) => setUserAnswer(e.target.value)}
       />
-    
+
       <Button
         className="mt-4"
         onClick={UpdateUserAnswer}
         disabled={loading || !userAnswer.trim()}
       >
         {loading ? (
-          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+          </>
         ) : (
           "Save Answer"
         )}
