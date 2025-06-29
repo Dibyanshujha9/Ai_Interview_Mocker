@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Target, GraduationCap, BarChart3 } from 'lucide-react';
 
 const Contact = () => {
   return (
@@ -76,39 +78,52 @@ const Page = () => {
         </section>
 
         {/* Feature Highlights */}
-        <section id="features" className="py-24 px-6 bg-slate-900/50">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Why Choose Let's Prepare?
-            </h2>
-            <p className="mt-6 text-xl text-slate-400 max-w-2xl mx-auto">
-              Powerful features designed to help you master every interview.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl w-full md:w-80 text-center shadow-2xl border border-slate-700 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="text-5xl mb-6">🎯</div>
-              <h3 className="text-2xl font-bold text-slate-100 mb-4">Smart Practice</h3>
-              <p className="text-slate-400 leading-relaxed">
-                AI-curated questions from 500+ top companies with real-time feedback.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl w-full md:w-80 text-center shadow-2xl border border-slate-700 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="text-5xl mb-6">👨‍🏫</div>
-              <h3 className="text-2xl font-bold text-slate-100 mb-4">Expert Mentorship</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Get personalized guidance from top professionals at FAANG companies.
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl w-full md:w-80 text-center shadow-2xl border border-slate-700 hover:border-emerald-500/50 transition-all duration-300 hover:transform hover:scale-105">
-              <div className="text-5xl mb-6">🏆</div>
-              <h3 className="text-2xl font-bold text-slate-100 mb-4">Success Analytics</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Track your growth with detailed analytics and celebrate achievements.
-              </p>
-            </div>
-          </div>
-        </section>
+        <section id="features" className="py-24 px-6 bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
+  <div className="text-center mb-16">
+    <h2 className="text-5xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent animate-pulse">
+      Why Choose Let's Prepare?
+    </h2>
+    <p className="mt-6 text-xl text-slate-400 max-w-2xl mx-auto">
+      Powerful features designed to help you master every interview.
+    </p>
+  </div>
+
+  <div className="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
+    {[
+      {
+        icon: <Target className="w-12 h-12 text-indigo-400 mx-auto mb-6" />,
+        title: "Smart Practice",
+        desc: "AI-curated questions from 500+ top companies with real-time feedback.",
+        hover: "hover:border-indigo-500/50",
+      },
+      {
+        icon: <GraduationCap className="w-12 h-12 text-purple-400 mx-auto mb-6" />,
+        title: "Expert Mentorship",
+        desc: "Get personalized guidance from top professionals at FAANG companies.",
+        hover: "hover:border-purple-500/50",
+      },
+      {
+        icon: <BarChart3 className="w-12 h-12 text-emerald-400 mx-auto mb-6" />,
+        title: "Success Analytics",
+        desc: "Track your growth with detailed analytics and celebrate achievements.",
+        hover: "hover:border-emerald-500/50",
+      },
+    ].map((feature, index) => (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.2, duration: 0.6, ease: "easeOut" }}
+        viewport={{ once: true }}
+        className={`bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-2xl w-full md:w-80 text-center shadow-2xl border border-slate-700 ${feature.hover} transition-all duration-300 transform hover:scale-105`}
+      >
+        {feature.icon}
+        <h3 className="text-2xl font-bold text-slate-100 mb-4">{feature.title}</h3>
+        <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
+      </motion.div>
+    ))}
+  </div>
+</section>
 
         {/* Testimonials */}
         <section id="testimonials" className="py-24 bg-slate-950 px-6 relative">
