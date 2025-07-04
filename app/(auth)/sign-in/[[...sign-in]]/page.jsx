@@ -245,4 +245,5 @@ function Feature({ icon, title, description }) {
       </div>
     </div>
   )
-}
+} 
+// Changes the dev version to prod 
