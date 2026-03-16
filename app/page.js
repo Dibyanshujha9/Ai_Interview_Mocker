@@ -42,7 +42,8 @@ const Page = () => {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://github.com/Dibyanshujha9"
+                // href="https://github.com/Dibyanshujha9"
+                href=""
                 className="text-slate-400 hover:text-slate-200 transition-all duration-300 transform hover:scale-110"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
